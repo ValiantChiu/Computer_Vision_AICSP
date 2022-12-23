@@ -26,47 +26,40 @@ LOGGER = get_logger(__name__)
 # demo_name -> (demo_function, demo_description)
 DEMOS = OrderedDict(
     [
-        ("註冊", (demos.intro, None)),
+        ("註冊", (demos.register, None)),
         (
             "商品頁",
             (
-                demos.fractal_demo,
-                """
-                呈列所有商品
-""",
+                demos.product_list,
+                """呈列所有商品
+                """,
             ),
         ),
         (
             "購物車",
             (
-                demos.plotting_demo,
-                """
-This demo illustrates a combination of plotting and animation with
-Streamlit. We're generating a bunch of random numbers in a loop for around
-5 seconds. Enjoy!
-""",
+                demos.cart,
+                """已經購買的項目
+
+                """,
             ),
         ),
         (
             "結帳",
             (
-                demos.mapping_demo,
-                """
-This demo shows how to use
-[`st.pydeck_chart`](https://docs.streamlit.io/en/latest/api.html#streamlit.pydeck_chart)
-to display geospatial data.
-""",
+                demos.checkout,
+                """付款並產生發票
+                
+                """,
             ),
         ),
         (
             "流量統計(bonus)",
             (
-                demos.data_frame_demo,
-                """
-This demo shows how to use `st.write` to visualize Pandas DataFrames.
+                demos.statistics,
+                """來客統計
 
-(Data courtesy of the [UN Data Explorer](http://data.un.org/Explorer.aspx).)
-""",
+                """,
             ),
         ),
     ]
@@ -89,8 +82,8 @@ def run():
             st.write(description)
         # Clear everything from the intro page.
         # We only have 4 elements in the page so this is intentional overkill.
-        for i in range(10):
-            st.empty()
+        #for i in range(10):
+        #    st.empty()
 
     demo()
 
