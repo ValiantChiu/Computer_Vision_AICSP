@@ -30,47 +30,54 @@ product_dict = {
 def register():
     import streamlit as st
     import datetime
+    import pickle
     st.sidebar.success("請選擇功能頁")
     new_username = st.text_input('請輸入註冊用戶名:')
-    new_password = st.text_input('請輸入新用戶密碼:','abc')
-    new_password_again = st.text_input('請再次確認新用戶密碼:')  
-    if new_password == new_password_again:
-        new_gender = st.selectbox(
-    '請輸入性別:', ('男', '女'))
-        birth_day = st.date_input( "請輸入生日:",value = datetime.date(1990, 1, 1),max_value=datetime.datetime.now())
-        new_cellphone = st.text_input('請輸入手機號碼:')
-        #st.write("特惠活動滿八千免運，請輸入您的總預算:")
-        moeny = st.slider('特惠活動滿八千免運，請輸入您的總預算:', 0, 50000, step= 1000)
-        st.write('你的預算:', moeny)
-        return new_username, new_gender, birth_day, moeny
-    else: 
-        st.text('請再確認你的密碼')
-    st.markdown("""  """
-    )
+    new_password = st.text_input('請輸入新用戶密碼:','')
+    print(type(new_password))
+    if new_password!='' :
+        new_password_again = st.text_input('請再次確認新用戶密碼:')  
+        if new_password == new_password_again:
+            new_gender = st.selectbox(
+        '請輸入性別:', ('男', '女'))
+            birth_day = st.date_input( "請輸入生日:",value = datetime.date(1990, 1, 1),max_value=datetime.datetime.now())
+            new_cellphone = st.text_input('請輸入手機號碼:')
+            #st.write("特惠活動滿八千免運，請輸入您的總預算:")
+            moeny = st.slider('特惠活動滿八千免運，請輸入您的總預算:', 0, 50000, step= 1000)
+            st.write('你的預算:', moeny)
+            if st.button('提交'):
+                with open('register_info.pickle', 'wb') as f:
+                    pickle.dump((new_username, new_gender, birth_day, moeny), f, pickle.HIGHEST_PROTOCOL)           
+                return new_username, new_gender, birth_day, moeny
+        else: 
+            st.text('請再確認你的密碼')
+        st.markdown("""  """
+        )
 
 
 # Turn off black formatting for this function to present the user with more
 # compact code.
 # fmt: off
-def checkout():
+def checkout(checkout_dic, birthday_month):
     import streamlit as st
     import pandas as pd
     import datetime
-
+    import pickle
+    
     def birthday_discount_check(birthday_month, purchase_amount):
         now = datetime.datetime.now()
         current_month = now.month
         if current_month == birthday_month:
             discounted_amount = int(purchase_amount * 0.9)
+            st.write('祝您生日快樂!打九折')
             return discounted_amount
         else:
             return purchase_amount    
 
     try:
-        checkout_dic = {'綠茶籽保濕霜': 1, '綠茶水平衡面霜': 2, "'OLAY'": 3, '蜂王乳保濕凝露': 2}
         price = [product_dict[i] for i in checkout_dic.keys()]
         total_price = [checkout_dic[i]*product_dict[i] for i in checkout_dic.keys()]
-        st.sidebar.markdown('### Map Layers')
+
 
         st.sidebar.checkbox('A', True)
 
@@ -79,9 +86,15 @@ def checkout():
         df['總額'] = total_price
         
         df = df.rename(columns={0:'數量'})
-        st.dataframe(df.style.highlight_max(axis=0))
-        st.write('### 應付$:' ,sum(total_price))
-        return sum(total_price)
+        st.dataframe(df)
+        #st.dataframe(df.style.highlight_max(axis=0))
+        total_price = sum(total_price)
+        total_price = birthday_discount_check(birthday_month.month,total_price)
+        st.write('### 應付$:' ,total_price)
+        if st.button('確定購買'):
+            with open('total_price.pickle', 'wb') as f:
+                pickle.dump(total_price, f, pickle.HIGHEST_PROTOCOL)           
+            return total_price
     except Exception as e:
         st.error(e)
 # fmt: on
@@ -91,26 +104,35 @@ def checkout():
 # fmt: off
 
 
-def product_list():
+def product_list(birth_day, new_gender, buy_number_list = [0]*len(product_dict)):
     import streamlit as st
-    def product_recommendation(age,sex):
+    import datetime
+    import pickle
+    def product_recommendation(birth_day,sex):
+        sex = (lambda x: 'female' if sex == '女' else 'man')(sex)
+        now = datetime.date.today()
+        age = int((now - birth_day).days)/365
+            
         if age < 30 and sex == 'female':
-            st.text('猜妳也喜歡保濕及乳液產品')
+            st.write('## 猜妳也喜歡保濕及乳液產品')
         elif age >= 30 and age < 50 and sex == 'female':
-            st.text('除了保濕、乳液產品，也推薦妳使用我們的隔離霜、淡妝產品')
+            st.write('## 除了保濕、乳液產品，也推薦妳使用我們的隔離霜、淡妝產品')
         else:
-            st.text('本月各式化妝品都有促銷，歡迎選購')
+            st.write('## 本月各式化妝品都有促銷，歡迎選購')
 
+    product_recommendation(birth_day, new_gender)
     buy_number_list = [0]*len(product_dict)
     for i,(product, price) in enumerate(product_dict.items()):
         buy_number_list[i] = st.number_input(f"商品:{product}, 價格:{price}",step = 1)
 
+    if st.button('提交'):
+        with open('buy_number_list.pickle', 'wb') as f:
+            pickle.dump(buy_number_list, f, pickle.HIGHEST_PROTOCOL) 
+        return buy_number_list
 
-    return buy_number_list
     # Streamlit widgets automatically run the script from top to bottom. Since
     # this button is not connected to any other logic, it just causes a plain
     # rerun.
-    st.button("Re-run")
 
 
 # fmt: on
@@ -118,9 +140,10 @@ def product_list():
 # Turn off black formatting for this function to present the user with more
 # compact code.
 # fmt: off
-def cart():
+def cart(buy_number_list):
     import streamlit as st
     from collections import Counter
+    import pickle
     def discount(money):
             #如果消費1500元到1999元是不會有折扣的(Bug)
         if(money >= 8000):
@@ -132,7 +155,7 @@ def cart():
         elif(money >= 2500):
             money = money * 0.85 + 250
             conclusion = "恭喜商品滿兩千五打8折，運費250，含運共 %d 元"%(money) 
-        elif(money >= 2000):
+        elif(money >= 1500):
             money = money * 0.9 + 250
             conclusion = "恭喜商品滿兩千打9折，運費250，含運共 %d 元"%(money) 
         else:
@@ -140,25 +163,24 @@ def cart():
             conclusion = "本次消費金額未滿$1500元無折扣，含運共 %d 元"%(money) 
         return money, conclusion
 
-    buy_number = [0, 0, 3, 0, 0, 4, 10, 0, 2, 0, 0]
-    buy_product_list = [[p]*buy_number[i] for i, p in enumerate(product_dict.keys())]
+    buy_product_list = [[p]*buy_number_list[i] for i, p in enumerate(product_dict.keys())]
     buy_product_list_flatten = [j for i in buy_product_list for j in i]
 
     try:
         final_buy_product_list = st.multiselect(
             "更改產品:",buy_product_list_flatten, buy_product_list_flatten
         )
-
-
-        st.write(discount(sum([product_dict[p] for p in final_buy_product_list]))[1])
+        st.write(f'### {discount(sum([product_dict[p] for p in final_buy_product_list]))[1]}')
         checkout_dict = Counter(final_buy_product_list)
-        return checkout_dict
+        if st.button('正確無誤'):
+            with open('checkout_dict.pickle', 'wb') as f:
+                pickle.dump(checkout_dict, f, pickle.HIGHEST_PROTOCOL)      
+            return checkout_dict
     except Exception as e:
         st.error(e)
     # Streamlit widgets automatically run the script from top to bottom. Since
     # this button is not connected to any other logic, it just causes a plain
     # rerun.
-    st.button("Re-run")
 
 
 # fmt: on
@@ -190,6 +212,7 @@ def statistics():
 
 
 
-def create_reciept():
-
-    pass
+def create_reciept(total_price):
+    import streamlit as st
+    st.write('# 開發中')
+    

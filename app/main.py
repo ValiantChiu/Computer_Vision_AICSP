@@ -19,6 +19,8 @@ from collections import OrderedDict
 import streamlit as st
 from streamlit.logger import get_logger
 import pages
+import pickle
+import datetime
 
 LOGGER = get_logger(__name__)
 
@@ -70,34 +72,85 @@ PAGES = OrderedDict(
 )
 
 
+
 def run():
-    
     page_name = st.sidebar.selectbox("選擇頁面", list(PAGES.keys()), 0)
-    page = PAGES[page_name][0]
+    show_code = st.sidebar.checkbox("Show code", False)
 
+    print(page_name)
     if page_name == "註冊":
-        show_code = True
+        page = PAGES[page_name][0]
         st.write("# 歡迎來到寶香齡美妝^-^")
+        register_info = page()
+        if register_info:
+            new_username, new_gender, birth_day,  moeny = register_info
+            st.write(f'### {new_username}貴賓, 請前往商品頁')
 
-    else:
-        show_code = st.sidebar.checkbox("Show code", True)
-        st.markdown("# %s" % page_name)
-        description = PAGES[page_name][1]
-        if description:
-            st.write(description)
-        # Clear everything from the intro page.
-        # We only have 4 elements in the page so this is intentional overkill.
-        #for i in range(10):
-        #    st.empty()
 
-    s = page()
-    print(s)
+    if page_name =='商品頁':
+        page = PAGES[page_name][0]
+        try:
+            with open(f'register_info.pickle', 'rb') as f:
+                new_username, new_gender, birth_day,  moeny = pickle.load(f)   
+            buy_number_list = page(birth_day, new_gender)
+            if buy_number_list:
+                st.write(f'### {new_username}貴賓, 請前往購物車')
+        except Exception as e:
+            print(e)
+            #st.write('# 尚未完成註冊')
 
-    if show_code:
-        st.markdown("## Code")
-        sourcelines, _ = inspect.getsourcelines(page)
-        st.code(textwrap.dedent("".join(sourcelines[1:])))
+    if page_name =='購物車':
+        page = PAGES[page_name][0]
+        try:
+            with open(f'buy_number_list.pickle', 'rb') as f:
+                buy_number_list = pickle.load(f)   
+            checkout_dict = page(buy_number_list)
+            if checkout_dict:
+                st.write(f'### 請前往結帳')
+        except Exception as e:
+            print(e)
+            st.write('# 尚未完成購買')
+
+    if page_name =='結帳':
+        page = PAGES[page_name][0]
+        try:
+            st.write(f'### 您的訂單')
+            with open(f'register_info.pickle', 'rb') as f:
+                new_username, new_gender, birth_day,  moeny = pickle.load(f)            
+            with open(f'checkout_dict.pickle', 'rb') as f:
+                checkout_dict = pickle.load(f)   
+            total_price = page(checkout_dict, birth_day)
+            if total_price:
+                st.write(f'### 請前往索取發票')
+        except Exception as e:
+            print(e)
+            st.write('# 尚未確定購物車內容')        
+        pass
+
+    if page_name =='發票及貨運單':
+        page = PAGES[page_name][0]
+        try:
+            with open(f'total_price.pickle', 'rb') as f:
+                total_price = pickle.load(f)   
+            page(total_price)
+        except Exception as e:
+            print(e)
+            st.write('# 尚未結帳')
+
+    if page_name =='流量統計(bonus)':
+        page = PAGES[page_name][0]
+        page()    
+    
+
+    try:
+        if show_code:
+            st.markdown("## Code")
+            sourcelines, _ = inspect.getsourcelines(page)
+            st.code(textwrap.dedent("".join(sourcelines[1:])))
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
+    timestamp = ''.join([i for i in str(datetime.datetime.now()) if i>='0']).replace(':','')
     run()
