@@ -12,6 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#Copyright 2022 Chi-Chun Chiu
+
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
+
+
 import inspect
 import textwrap
 from collections import OrderedDict
@@ -20,7 +35,6 @@ import streamlit as st
 from streamlit.logger import get_logger
 import pages
 import pickle
-import datetime
 
 LOGGER = get_logger(__name__)
 
@@ -77,7 +91,7 @@ def run():
     page_name = st.sidebar.selectbox("選擇頁面", list(PAGES.keys()), 0)
     show_code = st.sidebar.checkbox("Show code", False)
 
-    print(page_name)
+
     if page_name == "註冊":
         page = PAGES[page_name][0]
         st.write("# 歡迎來到寶香齡美妝^-^")
@@ -96,8 +110,8 @@ def run():
             if buy_number_list:
                 st.write(f'### {new_username}貴賓, 請前往購物車')
         except Exception as e:
-            print(e)
-            #st.write('# 尚未完成註冊')
+            
+            st.write('# 尚未完成註冊')
 
     if page_name =='購物車':
         page = PAGES[page_name][0]
@@ -108,7 +122,6 @@ def run():
             if checkout_dict:
                 st.write(f'### 請前往結帳')
         except Exception as e:
-            print(e)
             st.write('# 尚未完成購買')
 
     if page_name =='結帳':
@@ -123,7 +136,6 @@ def run():
             if total_price:
                 st.write(f'### 請前往索取發票')
         except Exception as e:
-            print(e)
             st.write('# 尚未確定購物車內容')        
         pass
 
@@ -134,7 +146,6 @@ def run():
                 total_price = pickle.load(f)   
             page(total_price)
         except Exception as e:
-            print(e)
             st.write('# 尚未結帳')
 
     if page_name =='流量統計(bonus)':
@@ -152,5 +163,4 @@ def run():
 
 
 if __name__ == "__main__":
-    timestamp = ''.join([i for i in str(datetime.datetime.now()) if i>='0']).replace(':','')
     run()

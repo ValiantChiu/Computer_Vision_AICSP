@@ -12,6 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#Copyright 2022 Chi-Chun Chiu
+
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
+
 product_dict = {
 "蘭蔻": 1500,
 "'SK-II'": 1400,
@@ -34,7 +48,6 @@ def register():
     st.sidebar.success("請選擇功能頁")
     new_username = st.text_input('請輸入註冊用戶名:')
     new_password = st.text_input('請輸入新用戶密碼:','')
-    print(type(new_password))
     if new_password!='' :
         new_password_again = st.text_input('請再次確認新用戶密碼:')  
         if new_password == new_password_again:
@@ -55,9 +68,7 @@ def register():
         )
 
 
-# Turn off black formatting for this function to present the user with more
-# compact code.
-# fmt: off
+
 def checkout(checkout_dic, birthday_month):
     import streamlit as st
     import pandas as pd
@@ -97,11 +108,7 @@ def checkout(checkout_dic, birthday_month):
             return total_price
     except Exception as e:
         st.error(e)
-# fmt: on
 
-# Turn off black formatting for this function to present the user with more
-# compact code.
-# fmt: off
 
 
 def product_list(birth_day, new_gender, buy_number_list = [0]*len(product_dict)):
@@ -130,16 +137,7 @@ def product_list(birth_day, new_gender, buy_number_list = [0]*len(product_dict))
             pickle.dump(buy_number_list, f, pickle.HIGHEST_PROTOCOL) 
         return buy_number_list
 
-    # Streamlit widgets automatically run the script from top to bottom. Since
-    # this button is not connected to any other logic, it just causes a plain
-    # rerun.
 
-
-# fmt: on
-
-# Turn off black formatting for this function to present the user with more
-# compact code.
-# fmt: off
 def cart(buy_number_list):
     import streamlit as st
     from collections import Counter
@@ -178,16 +176,8 @@ def cart(buy_number_list):
             return checkout_dict
     except Exception as e:
         st.error(e)
-    # Streamlit widgets automatically run the script from top to bottom. Since
-    # this button is not connected to any other logic, it just causes a plain
-    # rerun.
 
 
-# fmt: on
-
-# Turn off black formatting for this function to present the user with more
-# compact code.
-# fmt: off
 def statistics():
     import streamlit as st
     import time
@@ -208,7 +198,7 @@ def statistics():
 
     progress_bar.empty()
 
-# fmt: on
+
 
 
 
