@@ -12,22 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+product_dict = {
+"蘭蔻": 1500,
+"'SK-II'": 1400,
+"'OLAY'": 1300,
+"歐姬兒": 1300,
+"雅詩蘭黛": 1300,
+"綠茶水平衡面霜": 1400,
+"綠茶籽保濕霜": 1500,
+"黛珂": 1500,
+"蜂王乳保濕凝露": 1600,
+"蜂王乳潤白QQ凝露": 1600,
+"資生堂": 1300
+}
+
 
 def register():
     import streamlit as st
-
+    import datetime
     st.sidebar.success("請選擇功能頁")
-    new_username = st.text_input('請輸入註冊用戶名:', '您的名子')
+    new_username = st.text_input('請輸入註冊用戶名:')
     new_password = st.text_input('請輸入新用戶密碼:','abc')
     new_password_again = st.text_input('請再次確認新用戶密碼:')  
     if new_password == new_password_again:
         new_gender = st.selectbox(
     '請輸入性別:', ('男', '女'))
-        new_age = st.slider('請輸入芳齡:', 0, 120,30, step= 1)
+        birth_day = st.date_input( "請輸入生日:",value = datetime.date(1990, 1, 1),max_value=datetime.datetime.now())
         new_cellphone = st.text_input('請輸入手機號碼:')
         #st.write("特惠活動滿八千免運，請輸入您的總預算:")
         moeny = st.slider('特惠活動滿八千免運，請輸入您的總預算:', 0, 50000, step= 1000)
         st.write('你的預算:', moeny)
+        return new_username, new_gender, birth_day, moeny
     else: 
         st.text('請再確認你的密碼')
     st.markdown("""  """
@@ -40,29 +55,35 @@ def register():
 def checkout():
     import streamlit as st
     import pandas as pd
-    import pydeck as pdk
+    import datetime
 
-    from urllib.error import URLError
-
-    @st.cache
-    def from_data_file(filename):
-        url = (
-            "http://raw.githubusercontent.com/streamlit/"
-            "example-data/master/hello/v1/%s" % filename)
-        return pd.read_json(url)
+    def birthday_discount_check(birthday_month, purchase_amount):
+        now = datetime.datetime.now()
+        current_month = now.month
+        if current_month == birthday_month:
+            discounted_amount = int(purchase_amount * 0.9)
+            return discounted_amount
+        else:
+            return purchase_amount    
 
     try:
-        
+        checkout_dic = {'綠茶籽保濕霜': 1, '綠茶水平衡面霜': 2, "'OLAY'": 3, '蜂王乳保濕凝露': 2}
+        price = [product_dict[i] for i in checkout_dic.keys()]
+        total_price = [checkout_dic[i]*product_dict[i] for i in checkout_dic.keys()]
         st.sidebar.markdown('### Map Layers')
 
         st.sidebar.checkbox('A', True)
 
-    except URLError as e:
-        st.error("""
-            **This demo requires internet access.**
-
-            Connection error: %s
-        """ % e.reason)
+        df = pd.DataFrame.from_dict(checkout_dic, orient='index')
+        df['價格'] = price
+        df['總額'] = total_price
+        
+        df = df.rename(columns={0:'數量'})
+        st.dataframe(df.style.highlight_max(axis=0))
+        st.write('### 應付$:' ,sum(total_price))
+        return sum(total_price)
+    except Exception as e:
+        st.error(e)
 # fmt: on
 
 # Turn off black formatting for this function to present the user with more
@@ -72,25 +93,20 @@ def checkout():
 
 def product_list():
     import streamlit as st
-    products_list = {
-    "蘭蔻": 1500,
-    "'SK-II'": 1400,
-    "'OLAY'": 1300,
-    "歐姬兒": 1300,
-    "雅詩蘭黛": 1300,
-    "綠茶水平衡面霜": 1400,
-    "綠茶籽保濕霜": 1500,
-    "黛珂": 1500,
-    "蜂王乳保濕凝露": 1600,
-    "蜂王乳潤白QQ凝露": 1600,
-    "資生堂": 1300
-    }
-    buy_number = [0]*len(products_list)
-    for i,(product, price) in enumerate(products_list.items()):
-        buy_number[i] = st.number_input(f"商品:{product}, 價格:{price}",step = 1)
-    #st.write('The current number is ', number)
+    def product_recommendation(age,sex):
+        if age < 30 and sex == 'female':
+            st.text('猜妳也喜歡保濕及乳液產品')
+        elif age >= 30 and age < 50 and sex == 'female':
+            st.text('除了保濕、乳液產品，也推薦妳使用我們的隔離霜、淡妝產品')
+        else:
+            st.text('本月各式化妝品都有促銷，歡迎選購')
+
+    buy_number_list = [0]*len(product_dict)
+    for i,(product, price) in enumerate(product_dict.items()):
+        buy_number_list[i] = st.number_input(f"商品:{product}, 價格:{price}",step = 1)
 
 
+    return buy_number_list
     # Streamlit widgets automatically run the script from top to bottom. Since
     # this button is not connected to any other logic, it just causes a plain
     # rerun.
@@ -104,6 +120,7 @@ def product_list():
 # fmt: off
 def cart():
     import streamlit as st
+    from collections import Counter
     def discount(money):
             #如果消費1500元到1999元是不會有折扣的(Bug)
         if(money >= 8000):
@@ -120,30 +137,22 @@ def cart():
             conclusion = "恭喜商品滿兩千打9折，運費250，含運共 %d 元"%(money) 
         else:
             money = money + 250
+            conclusion = "本次消費金額未滿$1500元無折扣，含運共 %d 元"%(money) 
         return money, conclusion
-    products_list = {
-    "蘭蔻": 1500,
-    "'SK-II'": 1400,
-    "'OLAY'": 1300,
-    "歐姬兒": 1300,
-    "雅詩蘭黛": 1300,
-    "綠茶水平衡面霜": 1400,
-    "綠茶籽保濕霜": 1500,
-    "黛珂": 1500,
-    "蜂王乳保濕凝露": 1600,
-    "蜂王乳潤白QQ凝露": 1600,
-    "資生堂": 1300
-    }
+
     buy_number = [0, 0, 3, 0, 0, 4, 10, 0, 2, 0, 0]
-    buy_product_list = [[p]*buy_number[i] for i, p in enumerate(products_list.keys())]
+    buy_product_list = [[p]*buy_number[i] for i, p in enumerate(product_dict.keys())]
     buy_product_list_flatten = [j for i in buy_product_list for j in i]
 
     try:
         final_buy_product_list = st.multiselect(
-            "選擇產品",buy_product_list_flatten, buy_product_list_flatten
+            "更改產品:",buy_product_list_flatten, buy_product_list_flatten
         )
-        st.text(discount(sum([products_list[p] for p in final_buy_product_list])))
-        1+''
+
+
+        st.write(discount(sum([product_dict[p] for p in final_buy_product_list]))[1])
+        checkout_dict = Counter(final_buy_product_list)
+        return checkout_dict
     except Exception as e:
         st.error(e)
     # Streamlit widgets automatically run the script from top to bottom. Since
@@ -178,3 +187,9 @@ def statistics():
     progress_bar.empty()
 
 # fmt: on
+
+
+
+def create_reciept():
+
+    pass

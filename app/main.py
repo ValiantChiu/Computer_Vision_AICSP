@@ -18,19 +18,19 @@ from collections import OrderedDict
 
 import streamlit as st
 from streamlit.logger import get_logger
-import demos
+import pages
 
 LOGGER = get_logger(__name__)
 
 # Dictionary of
 # demo_name -> (demo_function, demo_description)
-DEMOS = OrderedDict(
+PAGES = OrderedDict(
     [
-        ("註冊", (demos.register, None)),
+        ("註冊", (pages.register, None)),
         (
             "商品頁",
             (
-                demos.product_list,
+                pages.product_list,
                 """呈列所有商品
                 """,
             ),
@@ -38,27 +38,31 @@ DEMOS = OrderedDict(
         (
             "購物車",
             (
-                demos.cart,
+                pages.cart,
                 """已經購買的項目
-
                 """,
             ),
         ),
         (
             "結帳",
             (
-                demos.checkout,
+                pages.checkout,
                 """付款並產生發票
-                
+                """,
+            ),
+        ),        (
+            "發票及貨運單",
+            (
+                pages.create_reciept,
+                """發票
                 """,
             ),
         ),
         (
             "流量統計(bonus)",
             (
-                demos.statistics,
+                pages.statistics,
                 """來客統計
-
                 """,
             ),
         ),
@@ -67,17 +71,18 @@ DEMOS = OrderedDict(
 
 
 def run():
-    demo_name = st.sidebar.selectbox("Choose a demo", list(DEMOS.keys()), 0)
-    demo = DEMOS[demo_name][0]
+    
+    page_name = st.sidebar.selectbox("選擇頁面", list(PAGES.keys()), 0)
+    page = PAGES[page_name][0]
 
-    if demo_name == "註冊":
-        show_code = False
+    if page_name == "註冊":
+        show_code = True
         st.write("# 歡迎來到寶香齡美妝^-^")
 
     else:
         show_code = st.sidebar.checkbox("Show code", True)
-        st.markdown("# %s" % demo_name)
-        description = DEMOS[demo_name][1]
+        st.markdown("# %s" % page_name)
+        description = PAGES[page_name][1]
         if description:
             st.write(description)
         # Clear everything from the intro page.
@@ -85,11 +90,12 @@ def run():
         #for i in range(10):
         #    st.empty()
 
-    demo()
+    s = page()
+    print(s)
 
     if show_code:
         st.markdown("## Code")
-        sourcelines, _ = inspect.getsourcelines(demo)
+        sourcelines, _ = inspect.getsourcelines(page)
         st.code(textwrap.dedent("".join(sourcelines[1:])))
 
 
