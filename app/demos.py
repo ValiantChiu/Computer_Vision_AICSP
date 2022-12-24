@@ -72,7 +72,6 @@ def checkout():
 
 def product_list():
     import streamlit as st
-    import numpy as np
     products_list = {
     "蘭蔻": 1500,
     "'SK-II'": 1400,
@@ -144,15 +143,9 @@ def cart():
             "選擇產品",buy_product_list_flatten, buy_product_list_flatten
         )
         st.text(discount(sum([products_list[p] for p in final_buy_product_list])))
+        1+''
     except Exception as e:
-        st.error(
-            """
-            **This demo requires internet access.**
-
-            Connection error: %s
-        """
-            % e.reason
-        )
+        st.error(e)
     # Streamlit widgets automatically run the script from top to bottom. Since
     # this button is not connected to any other logic, it just causes a plain
     # rerun.

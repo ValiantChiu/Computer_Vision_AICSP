@@ -73,7 +73,7 @@ def run():
     if demo_name == "註冊":
         show_code = False
         st.write("# 歡迎來到寶香齡美妝^-^")
-        st.write("## 特惠活動滿八千免運，請輸入您的總預算:")
+
     else:
         show_code = st.sidebar.checkbox("Show code", True)
         st.markdown("# %s" % demo_name)
