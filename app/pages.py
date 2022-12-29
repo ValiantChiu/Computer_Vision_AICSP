@@ -189,27 +189,45 @@ def cart(buy_number_list):
 
 
 def statistics():
+    import pandas as pd
     import streamlit as st
-    import time
-    import numpy as np
+    import altair as alt
+    import random
+    quantity = sorted(random.sample(range(30, 500), len(product_dict)),reverse=False)
 
-    progress_bar = st.sidebar.progress(0)
-    status_text = st.sidebar.empty()
-    last_rows = np.random.randn(1, 1)
-    chart = st.line_chart(last_rows)
-
-    for i in range(1, 101):
-        new_rows = last_rows[-1, :] + np.random.randn(5, 1).cumsum(axis=0)
-        status_text.text("%i%% Complete" % i)
-        chart.add_rows(new_rows)
-        progress_bar.progress(i)
-        last_rows = new_rows
-        time.sleep(0.05)
-
-    progress_bar.empty()
+    data = pd.DataFrame({
+        '銷售數量': quantity,
+        '產品': product_dict.keys()
+     })
+    print(data)
+    bar_chart = alt.Chart(data).mark_bar().encode(
+        x='銷售數量',
+        y='產品',
+        color=alt.condition(
+        alt.datum.銷售數量 >= max(quantity)*0.9,  # If the year is 1810 this test returns True,
+        alt.value('orange'),     # which sets the bar orange.
+        alt.value('steelblue')   # And if it's not true it sets the bar steelblue.
+    )
+    ).properties(height=500)
+ 
+    st.altair_chart(bar_chart, use_container_width=True)
 
 
 def create_reciept(total_price):
     import streamlit as st
+    import string
+    import random
+    first_c = random.choice(string.ascii_uppercase)
+    second_c = random.choice(string.ascii_uppercase)
+    number = ''.join([str(random.choice(range(0,10)))for i in range(8)])
 
-    st.write("# 開發中")
+    st.write(f"### 您的發票")
+    st.write("## 寶香齡美妝")
+    st.write("### 電子發票證明聯")
+    st.write("### 111年11-12月")
+    st.write(f"### {first_c}{second_c}-{number}")
+    st.write(f"### 總計: {total_price}")
+    
+
+
+

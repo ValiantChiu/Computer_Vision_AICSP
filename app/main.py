@@ -76,10 +76,10 @@ PAGES = OrderedDict(
             ),
         ),
         (
-            "流量統計(bonus)",
+            "產品排行榜",
             (
                 pages.statistics,
-                """來客統計
+                """購買統計
                 """,
             ),
         ),
@@ -146,7 +146,8 @@ def run():
         except Exception as e:
             st.write("# 尚未結帳")
 
-    if page_name == "流量統計(bonus)":
+    if page_name == "產品排行榜":
+        st.write(f"### 銷售排行榜")
         page = PAGES[page_name][0]
         page()
 
